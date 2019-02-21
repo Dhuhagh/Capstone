@@ -133,14 +133,14 @@ rmse_results <- data_frame(method = "Just the average", RMSE = naive_rmse)
 #to represent average ranking for movie i
 #Y_{u,i} = \mu + b_i + \varepsilon_{u,i}
 #We can again use least squared to estimate the movie effect 
-mu <- mean(train_set$rating) 
+Mu_2 <- mean(train_set$rating) 
 movie_avgs <- train_set %>% 
   group_by(movieId) %>% 
-  summarize(b_i = mean(rating - mu))
+  summarize(b_i = mean(rating - Mu_2))
 #we can see that variability in the estimate as plotted here 
 movie_avgs %>% qplot(b_i, geom ="histogram", bins = 10, data = ., color = I("black"))
 #let's see how the prediction improves 
-predicted_ratings <- mu + test_set %>% 
+predicted_ratings <- Mu_2 + test_set %>% 
   left_join(movie_avgs, by='movieId') %>%
   pull(b_i)
 
@@ -171,7 +171,7 @@ user_avgs <- train_set %>%
   group_by(userId) %>%
   summarize(b_u = mean(rating - Mu_2 - b_i))
 #now let's see how RMSE improved this time 
-predicted_ratings <- test_set %>% 
+predicted_ratings_2 <- test_set %>% 
   left_join(movie_avgs, by='movieId') %>%
   left_join(user_avgs, by='userId') %>%
   mutate(pred = Mu_2 + b_i + b_u) %>%
@@ -179,7 +179,7 @@ predicted_ratings <- test_set %>%
 
 
 
-model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
+model_3_rmse <- RMSE(predicted_ratings_2, test_set$rating)
 rmse_results <- bind_rows(rmse_results,
                           data_frame(method="Movie + User Effects Model",  
                                      RMSE = model_3_rmse))
@@ -187,13 +187,14 @@ rmse_results
 
 ## RMSE of the validation set
 
-
 valid_pred_rating <- validation %>%
   left_join(movie_avgs, by = "movieId" ) %>% 
   left_join(user_avgs , by = "userId") %>%
   mutate(pred = Mu_2 + b_i + b_u ) %>%
   .$pred
 
-model_3_valid <- RMSE(validation$rating , valid_pred_rating)
-rmse_results <- bind_rows( rmse_results, data.frame(Method = "Validation Results" , RMSE = model_3_valid))
+model_3_valid <- RMSE(validation$rating, valid_pred_rating$pred )
+model_3_valid
+rmse_results <- bind_rows( rmse_results, 
+                           data_frame(Method = "Validation Results" , RMSE = model_3_valid))
 rmse_results
