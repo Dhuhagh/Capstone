@@ -105,7 +105,7 @@ set.seed(1)
 test_index <- createDataPartition(y = edx$rating, times = 1, p = 0.2, list = FALSE)
 train_set <- edx[-test_index,]
 test_set <- edx[test_index,]
-#to make sure we don’t include users and movies in the test set that do not appear in 
+#to make sure we don???t include users and movies in the test set that do not appear in 
 #the training set, we remove these entries using the semi_join function:
 test_set <- test_set %>% 
   semi_join(train_set, by = "movieId") %>%
@@ -161,7 +161,7 @@ train_set %>%
 #hat there is substantial variability across users ratings as well. T
 #his implies that a further improvement to our 
 #model may be:
-#$Y~u,i~ = μ + b~i~ + ε~u,i~$
+#$Y~u,i~ = ?? + b~i~ + ??~u,i~$
 #we could fit this model by using use the lm() function but as mentioned earlier it 
 #would be very slow
 #lm(rating ~ as.factor(movieId) + as.factor(userId))
@@ -178,8 +178,22 @@ predicted_ratings <- test_set %>%
   pull(pred)
 
 
-model_2_rmse <- RMSE(predicted_ratings, test_set$rating)
+
+model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
 rmse_results <- bind_rows(rmse_results,
                           data_frame(method="Movie + User Effects Model",  
-                                     RMSE = model_2_rmse))
+                                     RMSE = model_3_rmse))
+rmse_results
+
+## RMSE of the validation set
+
+
+valid_pred_rating <- validation %>%
+  left_join(movie_avgs, by = "movieId" ) %>% 
+  left_join(user_avgs , by = "userId") %>%
+  mutate(pred = Mu_2 + b_i + b_u ) %>%
+  .$pred
+
+model_3_valid <- RMSE(validation$rating , valid_pred_rating)
+rmse_results <- bind_rows( rmse_results, data.frame(Method = "Validation Results" , RMSE = model_3_valid))
 rmse_results
