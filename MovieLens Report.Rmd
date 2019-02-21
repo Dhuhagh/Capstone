@@ -19,7 +19,7 @@ for this project the MovieLens Data set collected by GroupLens Research and can 
 ##Data Loading
 the data set is loaded using the code provided by course instucture in this link https://bit.ly/2Ng6tVW which split the data into edx set and 10% validation set.
 the edx set will be split into training and test set,and validation set will be used to final evaluation.
-```{r}
+```{r }
 #############################################################
 # Create edx set, validation set, and submission file
 #############################################################
@@ -181,7 +181,7 @@ naive_rmse
 this code creates a table for the RMSE result to store all the result from each method to compare.
 ```{r}
 rmse_results <- data_frame(method = "Just the average", RMSE = naive_rmse)
-rmse_results
+rmse_results%>% knitr::kable()
 ```
 
 ###Second Model| Movie Effect
@@ -211,7 +211,7 @@ model_2_rmse <- RMSE(predicted_ratings, test_set$rating)
 rmse_results <- bind_rows(rmse_results,
                           data_frame(method="Movie Effect Model",  
                                      RMSE = model_2_rmse))
-rmse_results 
+rmse_results %>% knitr::kable()
                 
 ```
 
@@ -249,7 +249,7 @@ model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
 rmse_results <- bind_rows(rmse_results,
                           data_frame(method="Movie + User Effects Model",  
                                      RMSE = model_3_rmse))
-rmse_results
+rmse_results%>% knitr::kable()
 
 ```
 
@@ -257,13 +257,14 @@ rmse_results
 
 ```{r}
 valid_pred_rating <- validation %>%
-  left_join(movie_avgs, by = "movieId" ) %>% 
+  left_join(movie_avgs , by = "movieId" ) %>% 
   left_join(user_avgs , by = "userId") %>%
   mutate(pred = Mu_2 + b_i + b_u ) %>%
-  .$pred
-model_3_valid <- RMSE(validation$rating , valid_pred_rating)
-rmse_results <- bind_rows( rmse_results, data.frame(Method = "Validation Results" , RMSE = model_3_valid))
-rmse_results
+  pull(pred)
+
+model_3_valid <- RMSE(valid_pred_rating, validation$rating)
+rmse_results <-  bind_rows( rmse_results, data_frame(Method = "Validation Results" , RMSE = model_3_valid))
+rmse_results%>% knitr::kable()
 ```
 
 ## Conclusion

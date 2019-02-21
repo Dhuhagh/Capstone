@@ -120,7 +120,7 @@ RMSE <- function(true_ratings, predicted_ratings){
 Mu_1 <- mean(train_set$rating)
 Mu_1
 
-naive_rmse <- RMSE(test_set$rating,Mu_1)
+naive_rmse <- RMSE( Mu_1,test_set$rating)
 naive_rmse
 
 #creating a table for the RMSE result to store all the result from each method to compare
@@ -170,12 +170,13 @@ user_avgs <- train_set %>%
   left_join(movie_avgs, by='movieId') %>%
   group_by(userId) %>%
   summarize(b_u = mean(rating - Mu_2 - b_i))
+
 #now let's see how RMSE improved this time 
 predicted_ratings_2 <- test_set %>% 
   left_join(movie_avgs, by='movieId') %>%
   left_join(user_avgs, by='userId') %>%
   mutate(pred = Mu_2 + b_i + b_u) %>%
-  pull(pred)
+  .$pred
 
 
 
@@ -192,8 +193,9 @@ valid_pred_rating <- validation %>%
   left_join(user_avgs , by = "userId") %>%
   mutate(pred = Mu_2 + b_i + b_u ) %>%
   .$pred
+valid_pred_rating
 
-model_3_valid <- RMSE(validation$rating, valid_pred_rating$pred )
+model_3_valid <- RMSE( validation$rating, valid_pred_rating)
 model_3_valid
 rmse_results <- bind_rows( rmse_results, 
                            data_frame(Method = "Validation Results" , RMSE = model_3_valid))
