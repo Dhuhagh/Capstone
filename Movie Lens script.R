@@ -112,8 +112,9 @@ test_set <- test_set %>%
   semi_join(train_set, by = "userId")
   
 #RMSE calculation Function 
+
 RMSE <- function(true_ratings, predicted_ratings){
-  sqrt(mean((true_ratings - predicted_ratings)^2))
+  sqrt(mean((true_ratings - predicted_ratings)^2, na.rm = TRUE))
 }
 
 # first model 
@@ -137,6 +138,7 @@ Mu_2 <- mean(train_set$rating)
 movie_avgs <- train_set %>% 
   group_by(movieId) %>% 
   summarize(b_i = mean(rating - Mu_2))
+movie_avgs
 #we can see that variability in the estimate as plotted here 
 movie_avgs %>% qplot(b_i, geom ="histogram", bins = 10, data = ., color = I("black"))
 #let's see how the prediction improves 
@@ -170,17 +172,16 @@ user_avgs <- train_set %>%
   left_join(movie_avgs, by='movieId') %>%
   group_by(userId) %>%
   summarize(b_u = mean(rating - Mu_2 - b_i))
+user_avgs
 
 #now let's see how RMSE improved this time 
-predicted_ratings_2 <- test_set %>% 
+predicted_ratings <- test_set %>% 
   left_join(movie_avgs, by='movieId') %>%
   left_join(user_avgs, by='userId') %>%
   mutate(pred = Mu_2 + b_i + b_u) %>%
   .$pred
 
-
-
-model_3_rmse <- RMSE(predicted_ratings_2, test_set$rating)
+model_3_rmse <- RMSE(predicted_ratings, test_set$rating)
 rmse_results <- bind_rows(rmse_results,
                           data_frame(method="Movie + User Effects Model",  
                                      RMSE = model_3_rmse))
@@ -192,11 +193,11 @@ valid_pred_rating <- validation %>%
   left_join(movie_avgs, by = "movieId" ) %>% 
   left_join(user_avgs , by = "userId") %>%
   mutate(pred = Mu_2 + b_i + b_u ) %>%
-  .$pred
-valid_pred_rating
+  pull(pred)
 
-model_3_valid <- RMSE( validation$rating, valid_pred_rating)
+model_3_valid <- RMSE(validation$rating, valid_pred_rating)
 model_3_valid
 rmse_results <- bind_rows( rmse_results, 
                            data_frame(Method = "Validation Results" , RMSE = model_3_valid))
 rmse_results
+

@@ -3,8 +3,8 @@ title: "MovieLens Report"
 author: "Dhuha Alghanmi"
 date: "2/17/2019"
 output:
-  word_document: default
   pdf_document: default
+  word_document: default
 ---
 
 ###Introduction 
@@ -97,6 +97,7 @@ edx %>%
 ```
 
 to see how the number of ratings for every movie, we do that by plotting histogram 
+
 ```{r  echo=FALSE}
 edx %>% count(movieId) %>% ggplot(aes(n))+
   geom_histogram(color = "black" , fill= "light blue",bins = 30 , binwidth = 0.2)+
@@ -105,7 +106,8 @@ edx %>% count(movieId) %>% ggplot(aes(n))+
   theme_gray()
 ```
 
-We note that some movies get more ratings it could be due to popularity. Now we visualize the number of ratings for each user  
+We note that some movies get more ratings it could be due to popularity. Now we visualize the number of ratings for each user 
+
 ```{r echo= FALSE }
 edx %>% count(userId) %>% ggplot(aes(n))+
   geom_histogram(color = "black" , fill= "light blue" , bins = 30, binwidth = 0.2)+
@@ -117,7 +119,8 @@ edx %>% count(userId) %>% ggplot(aes(n))+
  
 we see that some user are active more than others at rating movies.
 
-Now let's plot the rating for each movie genre :
+Now let's plot the rating for each movie genre 
+
 ```{r echo=FALSE }
 edx %>% separate_rows(genres, sep = "\\|") %>%
   group_by(genres) %>%
@@ -129,7 +132,9 @@ edx %>% separate_rows(genres, sep = "\\|") %>%
   theme_light()
  
 ```
+
 let's see the top 10 most popular genre 
+
 ```{r echo= FALSE }
 edx %>% separate_rows(genres, sep = "\\|") %>%
 	group_by(genres) %>%
@@ -147,20 +152,14 @@ train_set <- edx[-test_index,]
 test_set <- edx[test_index,]
 ```
 
-To make sure we don???t include users and movies in the test set that do not appear in the training set, we remove these entries using the semi_join function:
-```{r}
-test_set <- test_set %>% 
-  semi_join(train_set, by = "movieId") %>%
-  semi_join(train_set, by = "userId")
-```
-
 
 ## Model building and RMSE calculation 
 The Netflix challenge used typical error loss. They decided on a winner based on the residual mean squared error (RMSE) on a test set. The RMSE will be the measure of accuracy.
 ```{r}
+
 RMSE <- function(true_ratings, predicted_ratings){
-    sqrt(mean((true_ratings - predicted_ratings)^2))
-  }
+  sqrt(mean((true_ratings - predicted_ratings)^2, na.rm = TRUE))
+}
 ```
 
 ###First Model
@@ -196,6 +195,7 @@ movie_avgs <- train_set %>%
 ```
 
 we can see that variability in the estimate as plotted here 
+
 ```{r echo=FALSE}
 movie_avgs %>% qplot(b_i, geom ="histogram", bins = 10, data = ., color = I("black"))
 
@@ -262,7 +262,7 @@ valid_pred_rating <- validation %>%
   mutate(pred = Mu_2 + b_i + b_u ) %>%
   pull(pred)
 
-model_3_valid <- RMSE(valid_pred_rating, validation$rating)
+model_3_valid <- RMSE(validation$rating, valid_pred_rating)
 rmse_results <-  bind_rows( rmse_results, data_frame(Method = "Validation Results" , RMSE = model_3_valid))
 rmse_results%>% knitr::kable()
 ```
