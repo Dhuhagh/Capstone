@@ -1,4 +1,5 @@
 # Capstone
 
-This is capstone for HarvardX PH125.9x Data Science Capstone : MovieLens Project 
+Capstone for HarvardX PH125.9x Data Science Capstone : MovieLens Project 
+
  
